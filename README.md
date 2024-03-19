@@ -4,6 +4,13 @@
 module load amd-mixed/6.0.0
 ./install.sh -dc
 ```
+## Benchmarking Matmul Script
+The following does a 1024 x 1024 x 1024 matmul in bf16
+
+```bash
+bash benchmark_bf16_matmul.sh
+```
+
 
 # **hipBLAS**
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 # ########################################################################
-# Copyright (C) 2016-2023 Advanced Micro Devices, Inc. All rights reserved.
+# Copyright (C) 2016-2024 Advanced Micro Devices, Inc. All rights reserved.
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documentation files (the "Software"), to deal
@@ -227,11 +227,11 @@ install_packages( )
   fi
 
   # dependencies needed for library and clients to build
-  local library_dependencies_ubuntu=( "make" "pkg-config" )
-  local library_dependencies_centos_rhel=( "epel-release" "make" "gcc-c++" "rpm-build" )
-  local library_dependencies_centos_rhel_8=( "epel-release" "make" "gcc-c++" "rpm-build" )
-  local library_dependencies_fedora=( "make" "gcc-c++" "libcxx-devel" "rpm-build" )
-  local library_dependencies_sles=( "make" "gcc-c++" "libcxxtools9" "rpm-build" )
+  #local library_dependencies_ubuntu=( "make" "pkg-config" )
+  #local library_dependencies_centos_rhel=( "epel-release" "make" "gcc-c++" "rpm-build" )
+  #local library_dependencies_centos_rhel_8=( "epel-release" "make" "gcc-c++" "rpm-build" )
+  #local library_dependencies_fedora=( "make" "gcc-c++" "libcxx-devel" "rpm-build" )
+  #local library_dependencies_sles=( "make" "gcc-c++" "libcxxtools9" "rpm-build" )
 
   if [[ "${build_cuda}" == true ]]; then
     # Ideally, this could be cuda-cublas-dev, but the package name has a version number in it
@@ -240,18 +240,20 @@ install_packages( )
     # Custom rocm-dev installation
     if [[ -z ${custom_rocm_dev+foo} ]]; then
       # Install base rocm-dev package unless -v/--rocm-dev flag is passed
-      library_dependencies_ubuntu+=( "rocm-dev" )
-      library_dependencies_centos_rhel+=( "rocm-dev" )
-      library_dependencies_centos_rhel_8=( "rocm-dev" )
-      library_dependencies_fedora+=( "rocm-dev" )
-      library_dependencies_sles+=( "rocm-dev" )
+      #library_dependencies_ubuntu+=( "rocm-dev" )
+      #library_dependencies_centos_rhel+=( "rocm-dev" )
+      #library_dependencies_centos_rhel_8=( "rocm-dev" )
+      #library_dependencies_fedora+=( "rocm-dev" )
+      #library_dependencies_sles+=( "rocm-dev" )
+      echo "skip"
     else
       # Install rocm-specific rocm-dev package
-      library_dependencies_ubuntu+=( "${custom_rocm_dev}" )
-      library_dependencies_centos_rhel+=( "${custom_rocm_dev}" )
-      library_dependencies_centos_rhel_8+=( "${custom_rocm_dev}" )
-      library_dependencies_fedora+=( "${custom_rocm_dev}" )
-      library_dependencies_sles+=( "${custom_rocm_dev}" )
+      #library_dependencies_ubuntu+=( "${custom_rocm_dev}" )
+      #library_dependencies_centos_rhel+=( "${custom_rocm_dev}" )
+      #library_dependencies_centos_rhel_8+=( "${custom_rocm_dev}" )
+      #library_dependencies_fedora+=( "${custom_rocm_dev}" )
+      #library_dependencies_sles+=( "${custom_rocm_dev}" )
+      echo "skip"
     fi
 
     # Custom rocblas installation
@@ -288,7 +290,8 @@ install_packages( )
   fi
 
   # wget is needed for cmake
-  if [ -z "$CMAKE_VERSION" ] || $(dpkg --compare-versions $CMAKE_VERSION lt 3.16.8); then
+
+  if [ -z "$CMAKE_VERSION" ]; then
     if $update_cmake == true; then
       library_dependencies_ubuntu+=("wget")
       library_dependencies_centos_rhel+=("wget")
@@ -299,38 +302,43 @@ install_packages( )
   fi
 
   if [[ "${build_clients}" == true ]]; then
-    library_dependencies_ubuntu+=( "gfortran" )
-    library_dependencies_centos_rhel+=( "devtoolset-7-gcc-gfortran" )
-    library_dependencies_centos_rhel_8+=( "gcc-gfortran" )
-    library_dependencies_fedora+=( "gcc-gfortran" )
-    library_dependencies_sles+=( "gcc-fortran pkg-config" "dpkg" )
+    #library_dependencies_ubuntu+=( "gfortran" )
+    #library_dependencies_centos_rhel+=( "devtoolset-7-gcc-gfortran" )
+    #library_dependencies_centos_rhel_8+=( "gcc-gfortran" )
+    #library_dependencies_fedora+=( "gcc-gfortran" )
+    #library_dependencies_sles+=( "gcc-fortran pkg-config" "dpkg" )
+    echo "skip"
   fi
 
   case "${ID}" in
     ubuntu)
-      elevate_if_not_root apt update
-      install_apt_packages "${library_dependencies_ubuntu[@]}"
+      #elevate_if_not_root apt update
+      #install_apt_packages "${library_dependencies_ubuntu[@]}"
+      echo "skip"
       ;;
 
     centos|rhel)
 #     yum -y update brings *all* installed packages up to date
 #     without seeking user approval
 #     elevate_if_not_root yum -y update
-      if (( "${VERSION_ID%%.*}" >= "8" )); then
-        install_yum_packages "${library_dependencies_centos_rhel_8[@]}"
-      else
-        install_yum_packages "${library_dependencies_centos_rhel[@]}"
-      fi
+      #if (( "${VERSION_ID%%.*}" >= "8" )); then
+      #  install_yum_packages "${library_dependencies_centos_rhel_8[@]}"
+      #else
+      #  install_yum_packages "${library_dependencies_centos_rhel[@]}"
+      #fi
+      echo "skip"
       ;;
 
     fedora)
 #     elevate_if_not_root dnf -y update
-      install_dnf_packages "${library_dependencies_fedora[@]}"
+      #install_dnf_packages "${library_dependencies_fedora[@]}"
+      echo "skip"
       ;;
 
     sles|opensuse-leap)
 #     elevate_if_not_root zypper -y update
-      install_zypper_packages "${library_dependencies_sles[@]}"
+      #install_zypper_packages "${library_dependencies_sles[@]}"
+      echo "skip"
       ;;
     *)
       echo "This script is currently supported on Ubuntu, SLES, CentOS, RHEL and Fedora"
@@ -605,10 +613,12 @@ export FC="gfortran"
 if [[ "${install_dependencies}" == true ]]; then
 
   CMAKE_VERSION=$(cmake --version | grep -oP '(?<=version )[^ ]*' )
+  echo $CMAKE_VERSION
+
 
   install_packages
 
-  if [ -z "$CMAKE_VERSION" ] || $(dpkg --compare-versions $CMAKE_VERSION lt 3.16.8); then
+  if [ -z "$CMAKE_VERSION" ]; then
       if $update_cmake == true; then
         CMAKE_REPO="https://github.com/Kitware/CMake/releases/download/v3.16.8/"
         wget -nv ${CMAKE_REPO}/cmake-3.16.8.tar.gz
